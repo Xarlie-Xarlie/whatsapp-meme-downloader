@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  scraper:
+    build:
+      context: ./scraper
+    volumes:
+      - ./session:/app/session
+    env_file: .env
