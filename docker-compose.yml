@@ -4,6 +4,17 @@ services:
   scraper:
     build:
       context: ./scraper
+      args:
+        - IMAGE_NAME=meme-scraper
     env_file: .env
     volumes:
+      - ./post_links.txt:/app/post_links.txt
+  
+  download:
+    build:
+      context: ./download
+      args:
+        - IMAGE_NAME=meme-download
+    volumes:
+      - ./videos/:/app/videos/
       - ./post_links.txt:/app/post_links.txt
