@@ -1,23 +1,45 @@
 import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import time
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from bs4 import BeautifulSoup
+from webdriver_manager.chrome import ChromeDriverManager
+from time import sleep
 from dotenv import load_dotenv
+from re import compile
 
 load_dotenv(dotenv_path='../.env')
 
 username = os.getenv("USERNAME")
 password = os.getenv("PASSWORD")
 
+chrome_options = Options()
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--headless')
+chrome_options.add_argument('--disable-dev-shm-usage')
+chrome_options.add_argument('--disable-gpu-acceleration')
+
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+wait = WebDriverWait(driver, 10)
+
+def get_posts_links(username):
+    driver.get(f"https://www.instagram.com/{username}/saved/all-posts/")
+
+    wait.until(EC.presence_of_element_located((By.TAG_NAME, 'article')))
+
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    a_tags = soup.find_all("a", href=compile("/p/"))
+
+    return [post_link.get("href") for post_link in a_tags]
+
 def login_to_instagram(username, password):
-    driver = webdriver.Chrome()  # You need to have Chrome WebDriver installed
     driver.get("https://www.instagram.com/accounts/login/")
 
     # Wait until login form is loaded
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, 'username')))
+    wait.until(EC.presence_of_element_located((By.NAME, 'username')))
 
     # Fill in username and password
     driver.find_element(By.NAME, "username").send_keys(username)
@@ -25,24 +47,6 @@ def login_to_instagram(username, password):
 
     # Submit the form
     driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
-
-    # Wait until login is completed
-    WebDriverWait(driver, 10).until(EC.url_changes("https://www.instagram.com/accounts/login/"))
-
-    return [post_link.get("href") for post_link in a_tags]
-
-def scroll_to_bottom(driver):
-    # Scroll to the bottom of the page
-    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-    time.sleep(2)  # Add a short delay to allow content to load
-
-    driver.get(url)
-
-    sleep(2)
-
-    driver.find_element(By.NAME, "username").send_keys(username)
-    driver.find_element(By.NAME, "password").send_keys(password)
-    driver.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
 
     sleep(4)
 
@@ -69,8 +73,8 @@ def remove_from_saved_posts(post_links):
         sleep(1)
 
 if __name__ == "__main__":
-    login()
-    post_links = get_posts_links()
+    login_to_instagram(username, password)
+    post_links = get_posts_links(username)
     remove_from_saved_posts(post_links)
     driver.quit()
     write_posts_to_file(post_links, "./post_links.txt")
