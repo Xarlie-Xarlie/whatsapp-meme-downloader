@@ -41,10 +41,14 @@ with open('./post_links.txt', 'r') as file:
 
         download_url = driver.find_element(By.XPATH, '//*[@id="download-result"]/ul/li/div/div[2]/a').get_attribute("href")
 
-        response = rq.get(download_url, allow_redirects=True)
+        try:
+            response = rq.get(download_url, allow_redirects=True)
+        except:
+            response = None
 
-        with open(f"./videos/{video_index}.mp4", 'wb') as video:
-            video.write(response.content)
+        with open(f"./videos/{video_index}agaraga.mp4", 'wb') as video:
+            if response != None:
+                video.write(response.content)
             video.close()
 
         video_index += 1

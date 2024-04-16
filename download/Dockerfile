@@ -2,7 +2,7 @@ FROM python:3.10
 
 WORKDIR /app
 
-COPY . .
+COPY requirements.txt .
 
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
@@ -17,5 +17,7 @@ RUN apt install -y ./google-chrome-stable_current_amd64.deb
 RUN rm google-chrome-stable_current_amd64.deb
 
 RUN apt-get clean
+
+COPY download.py .
 
 CMD [ "python", "download.py" ]

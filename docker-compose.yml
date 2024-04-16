@@ -18,3 +18,10 @@ services:
     volumes:
       - ./videos/:/app/videos/
       - ./post_links.txt:/app/post_links.txt
+  cutter:
+    build:
+      context: ./video_cutter
+      args:
+        - IMAGE_NAME=meme-cutter
+    volumes:
+      - ./videos/:/app/videos/
