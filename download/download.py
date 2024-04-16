@@ -46,7 +46,7 @@ with open('./post_links.txt', 'r') as file:
         except:
             response = None
 
-        with open(f"./videos/{video_index}agaraga.mp4", 'wb') as video:
+        with open(f"./videos/{video_index}.mp4", 'wb') as video:
             if response != None:
                 video.write(response.content)
             video.close()
