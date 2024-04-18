@@ -9,7 +9,7 @@ services:
     env_file: .env
     volumes:
       - ./post_links.txt:/app/post_links.txt
-  
+
   download:
     build:
       context: ./download
@@ -18,10 +18,20 @@ services:
     volumes:
       - ./videos/:/app/videos/
       - ./post_links.txt:/app/post_links.txt
+
   cutter:
     build:
       context: ./video_cutter
       args:
         - IMAGE_NAME=meme-cutter
     volumes:
+      - ./videos/:/app/videos/
+
+  wbot:
+    build:
+      context: ./whatsapp_bot/
+      args:
+        - IMAGE_NAME=meme-bot
+    volumes:
+      - ./whatsapp_bot/.wwebjs_auth/:/app/.wwebjs_auth/
       - ./videos/:/app/videos/
