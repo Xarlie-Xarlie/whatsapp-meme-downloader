@@ -37,23 +37,24 @@ with open('./post_links.txt', 'r') as file:
 
         wait.until(EC.presence_of_element_located((By.ID, "closeModalBtn")))
 
-        wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="download-result"]/ul/li/div/div[2]/a')))
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".is-success")))
+        a_tags = driver.find_elements(By.CSS_SELECTOR, ".is-success")
 
-        download_url = driver.find_element(By.XPATH, '//*[@id="download-result"]/ul/li/div/div[2]/a').get_attribute("href")
+        for a in a_tags:
+            download_url = a.get_attribute("href")
+            try:
+                print(f"downloading: {link}")
+                response = rq.get(download_url, allow_redirects=True)
+            except:
+                response = None
 
-        try:
-            print(f"downloading: {link}")
-            response = rq.get(download_url, allow_redirects=True)
-        except:
-            response = None
+            with open(f"./videos/{video_index}.mp4", 'wb') as video:
+                if response != None:
+                    video.write(response.content)
+                video.close()
+                print(f"file saved: {video_index}.mp4")
 
-        with open(f"./videos/{video_index}.mp4", 'wb') as video:
-            if response != None:
-                video.write(response.content)
-            video.close()
-            print(f"file saved: {video_index}.mp4")
-
-        video_index += 1
+            video_index += 1
 
 print("Downloaded all videos!")
 driver.quit()

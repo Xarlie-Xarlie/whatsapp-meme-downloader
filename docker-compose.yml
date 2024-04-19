@@ -1,37 +1,63 @@
 version: '3.8'
 
 services:
-  scraper:
-    build:
-      context: ./scraper
-      args:
-        - IMAGE_NAME=meme-scraper
-    env_file: .env
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"  # RabbitMQ default port
+      - "15672:15672"  # RabbitMQ management UI port
     volumes:
-      - ./post_links.txt:/app/post_links.txt
-
-  download:
-    build:
-      context: ./download
-      args:
-        - IMAGE_NAME=meme-download
-    volumes:
-      - ./videos/:/app/videos/
-      - ./post_links.txt:/app/post_links.txt
-
-  cutter:
-    build:
-      context: ./video_cutter
-      args:
-        - IMAGE_NAME=meme-cutter
-    volumes:
-      - ./videos/:/app/videos/
+      - rabbitmq_data:/var/lib/rabbitmq  # Persist data
 
   wbot:
     build:
       context: ./whatsapp_bot/
-      args:
-        - IMAGE_NAME=meme-bot
     volumes:
       - ./whatsapp_bot/.wwebjs_auth/:/app/.wwebjs_auth/
       - ./videos/:/app/videos/
+    depends_on:
+      - rabbitmq
+
+  scraper_consumer:
+    image: bot_consumer:latest
+    build:
+      context: ./bot_consumer/
+    environment:
+      - QUEUE_NAME=scraper_queue
+    volumes:
+      - ./post_links.txt:/app/post_links.txt
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - wbot
+
+  download_consumer:
+    image: bot_consumer:latest
+    restart: on-failure
+    build:
+      context: ./bot_consumer/
+    environment:
+      - QUEUE_NAME=download_queue
+    volumes:
+      - ./post_links.txt:/app/post_links.txt
+      - ./videos/:/app/videos/
+    depends_on:
+      - rabbitmq
+      - wbot
+
+  cutter_consumer:
+    image: bot_consumer:latest
+    restart: on-failure
+    build:
+      context: ./bot_consumer/
+    volumes:
+      - ./videos/:/app/videos/
+    environment:
+      - QUEUE_NAME=cutter_queue
+    depends_on:
+      - rabbitmq
+      - wbot
+
+volumes:
+  rabbitmq_data:
