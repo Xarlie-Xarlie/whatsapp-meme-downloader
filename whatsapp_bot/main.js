@@ -37,10 +37,24 @@ client.on('message_create', async message => {
     message.reply('CharlieCharlie is here!');
   }
 
-  if (message.fromMe && message.body.startsWith("!download")) {
-    link = message.body.split("!download")[1].trim();
-    enqueueJob("download_queue", { link: link, retryCount: 0 });
-    message.reply("Download enqueued");
+  if (message.fromMe && message.hasMedia && message.body.startsWith("!download")) {
+    try {
+      const media = await message.downloadMedia();
+      if (media) {
+        const decodedText = atob(media.data);
+        const lines = decodedText.split("\n");
+        var jobs = 0;
+        lines.forEach(line => {
+          enqueueJob("download_queue", { link: line, retryCount: 0 });
+          jobs++;
+        });
+      }
+      message.reply(`Enqueued ${jobs} jobs!`)
+    }
+    catch (e) {
+      console.log(e)
+      message.reply("Error during Enqueue jobs!")
+    }
   }
 
   if (message.fromMe && message.body === "!memes") {
