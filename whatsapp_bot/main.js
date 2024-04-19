@@ -1,5 +1,6 @@
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const { listFiles } = require('./fileUtils');
+const { enqueueJob } = require('./enqueueJob');
 const qrcode = require('qrcode-terminal');
 const fs = require('fs');
 const path = require('path');
@@ -34,6 +35,12 @@ client.on('qr', qr => {
 client.on('message_create', async message => {
   if (message.body === '!on') {
     message.reply('CharlieCharlie is here!');
+  }
+
+  if (message.fromMe && message.body.startsWith("!download")) {
+    link = message.body.split("!download")[1].trim();
+    enqueueJob("download_queue", { link: link, retryCount: 0 });
+    message.reply("Download enqueued");
   }
 
   if (message.fromMe && message.body === "!memes") {

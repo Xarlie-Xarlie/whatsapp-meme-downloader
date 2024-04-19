@@ -20,6 +20,7 @@ RUN npm install
 
 COPY yarn.lock .
 COPY fileUtils.js .
+COPY enqueueJob.js .
 COPY main.js .
 
 CMD [ "node", "main.js" ]
