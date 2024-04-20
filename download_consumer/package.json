@@ -1,0 +1,15 @@
+{
+  "type": "module",
+  "name": "download_consumer",
+  "version": "1.0.0",
+  "description": "a web scraper downloader for whatappweb js",
+  "main": "index.js",
+  "author": "charlie charlie",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "amqplib": "^0.10.4",
+    "axios": "^1.6.8",
+    "puppeteer": "^22.6.5"
+  }
+}
