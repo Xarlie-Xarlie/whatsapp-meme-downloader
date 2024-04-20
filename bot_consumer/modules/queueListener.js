@@ -1,5 +1,5 @@
 const amqp = require('amqplib/callback_api');
-const { spawn } = require('child_process');
+const { Worker } = require('worker_threads');
 
 function listenToQueue(queueName) {
   try {
@@ -19,33 +19,30 @@ function listenToQueue(queueName) {
         console.log(`Listening to queue '${queueName}'`);
 
         channel.consume(queueName, function(msg) {
-          const { id, payload } = JSON.parse(msg.content.toString());
-          console.log(`Received message from ${queueName}: ${id}, Payload: ${payload}`);
+          const { link, scriptFile } = JSON.parse(msg.content.toString());
 
-          // Spawn worker process to handle message consumption
-          const workerProcess = spawn('node', ['./consumer/worker.js', id, payload]);
+          // Create a new worker thread to handle message consumption
+          const worker = new Worker('./consumer/worker.js', { workerData: { link, scriptFile } });
 
-          // Handle worker process events
-          workerProcess.on('exit', (code) => {
-            console.log(`Worker process exited with code ${code}`);
-            // Acknowledge message if worker process exits successfully
+          worker.on('error', (error) => {
+            console.error('Error in worker thread:', error);
+            // Move message to DLQ if processing error occurs
+            channel.sendToQueue(`${queueName}_dlq`, Buffer.from(JSON.stringify({ link, scriptFile })), { persistent: true });
+            // Acknowledge message from the main queue to remove it
+            channel.ack(msg);
+          });
+
+          worker.on('exit', (code) => {
             if (code === 0) {
+              console.log('Worker process finished with success');
               channel.ack(msg);
-              // Acknowledge message from the queue if processing is successful
-              channel.ack(msg);
-              console.log(`Message ${id} processed successfully.`);
-            } else {
-              console.error(`Error processing message ${id}:`);
-              // Move message to DLQ if processing error occurs
-              channel.sendToQueue(`${queueName}_dlq`, Buffer.from(msg), { persistent: true });
-              console.log(`Message ${id} moved to DLQ.`);
-              // Acknowledge message from the main queue to remove it
-              channel.ack(msg);
+            }
+            else {
+              console.error(`Worker stopped with exit code ${code}`);
             }
           });
         }, { noAck: false });
       });
-
     });
   } catch (error) {
     console.error(`Error listening to queue '${queueName}':`, error);

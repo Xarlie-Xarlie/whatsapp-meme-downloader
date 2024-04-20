@@ -1,12 +1,12 @@
 const { PythonShell } = require('python-shell');
 
-function handleMessage(id, payload) {
+function handleMessage(payload) {
   // Extract script file and arguments from the payload
-  const { scriptFile, args } = payload;
+  const { scriptFile, link } = payload;
 
   // Options to pass to the PythonShell constructor
   const options = {
-    args: args // Pass arguments to the Python script
+    args: [link], // Pass arguments to the Python script
   };
 
   // Execute the Python script

@@ -1,5 +1,7 @@
 const amqp = require('amqplib/callback_api');
 
+const MAX_RETRIES = 5;
+
 function listenToDlqQueue(queueName) {
   amqp.connect('amqp://guest:guest@rabbitmq:5672/', function(error0, connection) {
     // Connect to RabbitMQ

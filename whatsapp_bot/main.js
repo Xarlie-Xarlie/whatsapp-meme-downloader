@@ -45,7 +45,7 @@ client.on('message_create', async message => {
         const lines = decodedText.split("\n");
         var jobs = 0;
         lines.forEach(line => {
-          enqueueJob("download_queue", { link: line, retryCount: 0 });
+          enqueueJob("download_queue", { scriptFile: "download.py", link: line, retryCount: 0 });
           jobs++;
         });
       }
