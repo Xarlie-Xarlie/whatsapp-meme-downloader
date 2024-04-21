@@ -1,7 +1,7 @@
 import amqp from 'amqplib/callback_api.js';
 import downloadScraper from './download_scraper.js';
 
-const consumer = queueName => {
+const consumer = (queueName, nextQueue) => {
   try {
     // Connect to RabbitMQ
     amqp.connect('amqp://guest:guest@rabbitmq:5672/', function(error0, connection) {
@@ -23,8 +23,11 @@ const consumer = queueName => {
           const { link, retryCount } = JSON.parse(msg.content.toString());
 
           try {
-            await downloadScraper(link);
+            const filePaths = await downloadScraper(link);
             console.log("Finished consuming msg", link);
+            filePaths.forEach(filePath => {
+              channel.sendToQueue(nextQueue, Buffer.from(JSON.stringify({ filePath: filePath, retryCount: 0 })), { persistent: true });
+            });
             channel.ack(msg);
           } catch (e) {
             console.log(e);

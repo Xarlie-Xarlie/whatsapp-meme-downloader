@@ -20,16 +20,25 @@ const downloadScraper = async (link) => {
   const links = await page.$$eval('.abutton', aTags => { return aTags.map(a => a.href) });
   await browser.close();
 
-  links.forEach(async (href, index) => {
-    const response = await axios.get(href, {
-      responseType: 'arraybuffer' // To get binary data
-    });
+  for await (var [index, href] of links.entries()) {
+    const response = await downlaodFile(href)
+    await fileWrite(link, index, response.data);
+    index++;
+  }
 
-    // Save the file
-    const filePath = `./videos/${link.split("/p/")[1].replace("/", "")}${index}.mp4`;
-    fs.writeFile(filePath, response.data);
-    console.log(`File downloaded and saved to ${filePath}`);
+  return links.map((_e, index) => `./videos/${link.split("/p/")[1].replace("/", "")}${index}.mp4`);
+}
+
+async function downlaodFile(href) {
+  return axios.get(href, {
+    responseType: 'arraybuffer' // To get binary data
   });
+}
+
+async function fileWrite(link, index, data) {
+  const filePath = `./videos/${link.split("/p/")[1].replace("/", "")}${index}.mp4`;
+  await fs.writeFile(filePath, data);
+  console.log(`File downloaded and saved to ${filePath}`);
 }
 
 export default downloadScraper;
