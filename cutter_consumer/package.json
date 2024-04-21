@@ -1,0 +1,13 @@
+{
+  "type": "module",
+  "name": "cutter_consumer",
+  "version": "1.0.0",
+  "description": "Cut videos in 30s each",
+  "main": "index.js",
+  "author": "charlie charlie",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "amqplib": "^0.10.4"
+  }
+}
