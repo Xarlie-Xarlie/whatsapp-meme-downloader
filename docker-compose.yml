@@ -19,42 +19,24 @@ services:
     depends_on:
       - rabbitmq
 
-  scraper_consumer:
-    image: bot_consumer:latest
-    build:
-      context: ./bot_consumer/
-    environment:
-      - QUEUE_NAME=scraper_queue
-    volumes:
-      - ./post_links.txt:/app/post_links.txt
-    restart: on-failure
-    depends_on:
-      - rabbitmq
-      - wbot
-
   download_consumer:
-    image: bot_consumer:latest
     restart: on-failure
     build:
-      context: ./bot_consumer/
-    environment:
-      - QUEUE_NAME=download_queue
+      context: ./download_consumer/
     volumes:
-      - ./post_links.txt:/app/post_links.txt
       - ./videos/:/app/videos/
     depends_on:
       - rabbitmq
       - wbot
+    deploy:
+      replicas: 2
 
   cutter_consumer:
-    image: bot_consumer:latest
     restart: on-failure
     build:
-      context: ./bot_consumer/
+      context: ./cutter_consumer/
     volumes:
       - ./videos/:/app/videos/
-    environment:
-      - QUEUE_NAME=cutter_queue
     depends_on:
       - rabbitmq
       - wbot
