@@ -1,11 +1,11 @@
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
-const { listFiles } = require('./fileUtils');
+const { listSegmentedFiles } = require('./fileUtils');
 const { enqueueJob } = require('./enqueueJob');
 const qrcode = require('qrcode-terminal');
 const fs = require('fs');
 const path = require('path');
 
-const videosDir = './videos'; // Your videos directory
+const videosDir = './videos/'; // Your videos directory
 
 // Create a new client instance
 const client = new Client({
@@ -45,7 +45,7 @@ client.on('message_create', async message => {
         const lines = decodedText.split("\n");
         var jobs = 0;
         lines.forEach(line => {
-          enqueueJob("download_queue", { scriptFile: "download.py", link: line, retryCount: 0 });
+          enqueueJob("download_queue", { link: line, retryCount: 0 });
           jobs++;
         });
       }
@@ -57,8 +57,24 @@ client.on('message_create', async message => {
     }
   }
 
+  if (message.fromMe && message.body.startsWith("!download")) {
+    link = message.body.split(" ")[1];
+    if (link) {
+      enqueueJob("download_queue", { link: link, retryCount: 0 });
+      message.reply(`Enqueued job: ${link}`);
+    }
+  }
+
+  if (message.fromMe && message.body.startsWith("!seg")) {
+    file = message.body.split(" ")[1];
+    if (file) {
+      enqueueJob("cutter_queue", { filePath: './videos/' + file, retryCount: 0 });
+      message.reply(`Enqueued job: ${file}`);
+    }
+  }
+
   if (message.fromMe && message.body === "!memes") {
-    const videoFiles = listFiles(videosDir);
+    const videoFiles = listSegmentedFiles(videosDir);
     for (const filePath of videoFiles) {
       try {
         const filename = path.basename(filePath);
