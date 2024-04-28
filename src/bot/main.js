@@ -1,9 +1,11 @@
-const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
-const { listSegmentedFiles } = require('./fileUtils');
-const { enqueueJob } = require('./enqueueJob');
-const qrcode = require('qrcode-terminal');
-const fs = require('fs');
-const path = require('path');
+import { Client } from 'whatsapp-web.js';
+import MessageMedia from 'whatsapp-web.js/src/structures/MessageMedia.js'
+import LocalAuth from 'whatsapp-web.js/src/authStrategies/LocalAuth.js';
+import listSegmentedFiles from './file_utils.js';
+import enqueueJob from './enqueue_job.js';
+import qrcode from 'qrcode-terminal';
+import fs from 'fs';
+import path from 'path';
 
 const videosDir = './videos/'; // Your videos directory
 
@@ -45,7 +47,7 @@ client.on('message_create', async message => {
         const lines = decodedText.split("\n");
         var jobs = 0;
         lines.forEach(line => {
-          enqueueJob("download_queue", { link: line, retryCount: 0 });
+          enqueueJob("download_queue", { link: line, retryCount: 0, from: message.from });
           jobs++;
         });
       }
@@ -58,18 +60,14 @@ client.on('message_create', async message => {
   }
 
   if (message.fromMe && message.body.startsWith("!download")) {
-    link = message.body.split(" ")[1];
-    if (link) {
-      enqueueJob("download_queue", { link: link, retryCount: 0 });
-      message.reply(`Enqueued job: ${link}`);
-    }
-  }
-
-  if (message.fromMe && message.body.startsWith("!seg")) {
-    file = message.body.split(" ")[1];
-    if (file) {
-      enqueueJob("cutter_queue", { filePath: './videos/' + file, retryCount: 0 });
-      message.reply(`Enqueued job: ${file}`);
+    try {
+      const link = message.body.split(" ")[1];
+      if (link) {
+        enqueueJob("download_queue", { link: link, retryCount: 0, from: message.from });
+        message.reply(`Enqueued job: ${link}`);
+      }
+    } catch (e) {
+      message.reply(`Error in comand: ${e}`);
     }
   }
 
@@ -95,4 +93,4 @@ client.on('message_create', async message => {
 });
 
 // Start your client
-client.initialize();
+export default client;

@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 function naturalSort(a, b) {
   const extractNumber = str => {
@@ -56,4 +56,4 @@ function listSegmentedFiles(directory) {
   return segmentedFiles;
 }
 
-module.exports = { listSegmentedFiles };
+export default listSegmentedFiles;

@@ -69,7 +69,7 @@ async function segmentVideoIfNeeded(inputPath, outputPath, fileName) {
   }
 }
 
-async function segmentVideoAtPath(filePath) {
+async function segmentVideoAtPath({ filePath }) {
   try {
     const outputPath = path.dirname(filePath);
     const fileName = path.parse(filePath).name;

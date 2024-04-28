@@ -3,7 +3,7 @@ import fs from 'fs/promises';
 import axios from "axios";
 
 const url = "https://saveig.app/en/instagram-video-downloader"
-const downloadScraper = async (link) => {
+const downloadScraper = async ({ link }) => {
   const browser = await puppeteer.launch({
     headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],

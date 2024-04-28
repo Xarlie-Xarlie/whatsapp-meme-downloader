@@ -1,0 +1,20 @@
+{
+  "name": "meme_downloader",
+  "version": "1.0.0",
+  "description": "a whatapp bot to download memes from instagram",
+  "main": "./src/index.js",
+  "author": "charliecharlie <jeancharles552@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "type": "module",
+  "scripts": {
+    "start": "node ."
+  },
+  "dependencies": {
+    "amqplib": "^0.10.4",
+    "axios": "^1.6.8",
+    "puppeteer": "^22.6.5",
+    "qrcode-terminal": "^0.12.0",
+    "whatsapp-web.js": "^1.23.0"
+  }
+}

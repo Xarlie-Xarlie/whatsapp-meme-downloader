@@ -1,4 +1,4 @@
-const amqp = require('amqplib/callback_api');
+import amqp from 'amqplib/callback_api.js';
 
 function enqueueJob(queueName, payload) {
   amqp.connect('amqp://guest:guest@rabbitmq:5672/', function(error0, connection) {
@@ -23,4 +23,4 @@ function enqueueJob(queueName, payload) {
   });
 }
 
-module.exports = { enqueueJob };
+export default enqueueJob;

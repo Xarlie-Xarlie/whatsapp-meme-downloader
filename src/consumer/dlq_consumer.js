@@ -1,7 +1,9 @@
 import amqp from 'amqplib/callback_api.js';
+import handleRetry from './handleRetry.js';
+
 const MAX_RETRIES = 5;
 
-function dlqConsumer(queueName) {
+function dlqConsumer(queueName, eventCallback) {
   amqp.connect('amqp://guest:guest@rabbitmq:5672/', function(error0, connection) {
     // Connect to RabbitMQ
     if (error0) {
@@ -19,36 +21,24 @@ function dlqConsumer(queueName) {
       console.log(`Listening to queue '${queueName}'`);
 
       channel.consume(queueName, function(msg) {
-        const { link, retryCount } = JSON.parse(msg.content.toString());
+        const payload = JSON.parse(msg.content.toString());
+        const retryCount = payload.retryCount;
 
         // Handle worker process events
         if (retryCount < MAX_RETRIES) {
-          retryMessage(channel, msg, retryCount, queueName);
+          handleRetry(channel, msg, retryCount, queueName);
         } else {
-          console.log(`Maximum retry count reached for message ${link}. Rejecting message.`);
+          if (eventCallback) {
+            payload.queueName = queueName;
+            eventCallback(payload);
+          }
+          console.log(`Maximum retry count reached for message ${msg.content.toString()}. Rejecting message.`);
           // Reject the message if maximum retry count reached
           channel.reject(msg, false); // false indicates the message will not be requeued
         }
       }, { noAck: false });
     });
   });
-}
-
-function retryMessage(channel, msg, retryCount, queueName) {
-  const { link } = JSON.parse(msg.content.toString());
-
-  // Increase the retry count
-  const newRetryCount = retryCount + 1;
-
-  // Requeue the message to the main queue with the increased retry count
-  channel.sendToQueue(queueName.replace("_dlq", ""), Buffer.from(JSON.stringify({ link, retryCount: newRetryCount })), {
-    persistent: true
-  });
-
-  console.log(`Message ${link} retried (${newRetryCount} retries).`);
-
-  // Acknowledge the message from the DLQ
-  channel.ack(msg);
 }
 
 export default dlqConsumer;

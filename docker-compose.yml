@@ -12,34 +12,12 @@ services:
 
   wbot:
     build:
-      context: ./whatsapp_bot/
+      context: .
     volumes:
-      - ./whatsapp_bot/.wwebjs_auth/:/app/.wwebjs_auth/
+      - .wwebjs_auth/:/app/.wwebjs_auth/
       - ./videos/:/app/videos/
     depends_on:
       - rabbitmq
-
-  download_consumer:
-    restart: on-failure
-    build:
-      context: ./download_consumer/
-    volumes:
-      - ./videos/:/app/videos/
-    depends_on:
-      - rabbitmq
-      - wbot
-    deploy:
-      replicas: 2
-
-  cutter_consumer:
-    restart: on-failure
-    build:
-      context: ./cutter_consumer/
-    volumes:
-      - ./videos/:/app/videos/
-    depends_on:
-      - rabbitmq
-      - wbot
 
 volumes:
   rabbitmq_data:
