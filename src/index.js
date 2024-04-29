@@ -1,5 +1,6 @@
 import { Worker } from 'worker_threads';
 import client from './bot/main.js';
+import createVideoMedia from './bot/create_video_media.js'
 import enqueueJob from './bot/enqueue_job.js';
 
 // Initialize client
@@ -39,13 +40,18 @@ setTimeout(() => {
 function processWorkerNotification(payload) {
   if (payload.queueName === "download_queue") {
     payload.results.forEach(file => {
-      enqueueJob("cutter_queue", { filePath: file, retryCount: 0, from: payload.from })
+      enqueueJob("cutter_queue", { filePath: file, retryCount: 0, from: payload.from, noreply: payload.noreply });
     })
   } else if (payload.queueName === "cutter_queue") {
-    client.sendMessage(payload.from, `File downloaded and segmented: ${payload.filePath}`);
+    if (payload.noreply) {
+      client.sendMessage(payload.from, `File downloaded: ${payload.filePath.replace("./videos/", "")}`);
+    } else {
+      const media = createVideoMedia(payload.filePath);
+      client.sendMessage(payload.from, media);
+    }
   } else if (payload.queueName === "download_queue_dlq") {
     client.sendMessage(payload.from, `Download failed: ${payload.link}`);
   } else if (payload.queueName === "cutter_queue_dlq") {
-    client.sendMessage(payload.from, `Segmentation failed: ${payload.filePath}`);
+    client.sendMessage(payload.from, `Segmentation failed: ${payload.filePath.replace("./videos/", "")}`);
   }
 }

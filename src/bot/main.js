@@ -1,11 +1,9 @@
 import { Client } from 'whatsapp-web.js';
-import MessageMedia from 'whatsapp-web.js/src/structures/MessageMedia.js'
+import createVideoMedia from './create_video_media.js'
 import LocalAuth from 'whatsapp-web.js/src/authStrategies/LocalAuth.js';
 import listSegmentedFiles from './file_utils.js';
 import enqueueJob from './enqueue_job.js';
 import qrcode from 'qrcode-terminal';
-import fs from 'fs';
-import path from 'path';
 
 const videosDir = './videos/'; // Your videos directory
 
@@ -39,15 +37,16 @@ client.on('message_create', async message => {
     message.reply('CharlieCharlie is here!');
   }
 
-  if (message.fromMe && message.hasMedia && message.body.startsWith("!download")) {
+  else if (message.fromMe && message.hasMedia && message.body.startsWith("!download")) {
     try {
       const media = await message.downloadMedia();
+      const noreply = message.body.includes("noreply");
       if (media) {
         const decodedText = atob(media.data);
         const lines = decodedText.split("\n");
         var jobs = 0;
         lines.forEach(line => {
-          enqueueJob("download_queue", { link: line, retryCount: 0, from: message.from });
+          enqueueJob("download_queue", { link: line, retryCount: 0, from: message.from, noreply: noreply });
           jobs++;
         });
       }
@@ -59,26 +58,27 @@ client.on('message_create', async message => {
     }
   }
 
-  if (message.fromMe && message.body.startsWith("!download")) {
+  else if (message.fromMe && message.body.startsWith("!download")) {
     try {
-      const link = message.body.split(" ")[1];
-      if (link) {
-        enqueueJob("download_queue", { link: link, retryCount: 0, from: message.from });
-        message.reply(`Enqueued job: ${link}`);
-      }
+      const links = message.body.split(" ").slice(1);
+      const noreply = message.body.includes("noreply");
+      var jobs = 0;
+      links.forEach(link => {
+        enqueueJob("download_queue", { link: link, retryCount: 0, from: message.from, noreply: noreply });
+        jobs++;
+      })
+      message.reply(`Enqueued ${jobs} jobs`);
     } catch (e) {
-      message.reply(`Error in comand: ${e}`);
+      console.error(e);
+      message.reply("Ensure your command is like: !download https://link1... https://link2..., separated by spaces( )!");
     }
   }
 
-  if (message.fromMe && message.body === "!memes") {
+  else if (message.fromMe && message.body === "!status") {
     const videoFiles = listSegmentedFiles(videosDir);
     for (const filePath of videoFiles) {
       try {
-        const filename = path.basename(filePath);
-        const file = fs.readFileSync(filePath, { encoding: 'base64' });
-        const filesize = Buffer.byteLength(file, 'base64');
-        const media = new MessageMedia("video", file, filename, filesize);
+        const media = createVideoMedia(filePath);
         await client.sendMessage(message.from, media);
       } catch (e) {
         console.log(e)
@@ -87,7 +87,7 @@ client.on('message_create', async message => {
     }
   }
 
-  if (message.fromMe && message.body === "!stop") {
+  else if (message.fromMe && message.body === "!stop") {
     client.destroy()
   }
 });
