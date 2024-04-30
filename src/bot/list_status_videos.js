@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import { readdirSync, statSync } from 'fs';
+import { join, parse, extname } from 'path';
 
 function naturalSort(a, b) {
   const extractNumber = str => {
@@ -16,27 +16,27 @@ function naturalSort(a, b) {
 }
 
 // Function to list all segmented files without their original file
-function listSegmentedFiles(directory) {
-  const files = fs.readdirSync(directory);
+function listStatusVideos(directory) {
+  const files = readdirSync(directory);
   let segmentedFiles = [];
 
   const originalFiles = {}; // Object to store original file names
 
   files.forEach(file => {
-    const filePath = path.join(directory, file);
-    const stats = fs.statSync(filePath);
+    const filePath = join(directory, file);
+    const stats = statSync(filePath);
 
     if (stats.isDirectory()) {
-      const subFiles = listSegmentedFiles(filePath);
+      const subFiles = listStatusVideos(filePath);
       segmentedFiles = segmentedFiles.concat(subFiles);
     } else {
-      const fileName = path.parse(file).name;
+      const fileName = parse(file).name;
       const fileParts = fileName.split('_part_');
 
       // Check if the file is segmented
       if (fileParts.length > 1) {
         // Extract the base name and add segments to the list
-        const baseName = fileParts[0] + path.extname(file);
+        const baseName = fileParts[0] + extname(file);
         if (!originalFiles[baseName]) {
           originalFiles[baseName] = true; // Store the original file name
           segmentedFiles.push(baseName);
@@ -56,4 +56,4 @@ function listSegmentedFiles(directory) {
   return segmentedFiles;
 }
 
-export default listSegmentedFiles;
+export default listStatusVideos;

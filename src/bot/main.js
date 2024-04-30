@@ -1,7 +1,8 @@
 import { Client } from 'whatsapp-web.js';
-import createVideoMedia from './create_video_media.js'
+import createVideoMedia from './create_video_media.js';
 import LocalAuth from 'whatsapp-web.js/src/authStrategies/LocalAuth.js';
-import listSegmentedFiles from './file_utils.js';
+import listStatusVideos from './list_status_videos.js';
+import listPreviewVideos from './list_preview_videos.js';
 import enqueueJob from './enqueue_job.js';
 import qrcode from 'qrcode-terminal';
 
@@ -37,7 +38,7 @@ client.on('message_create', async message => {
     message.reply('CharlieCharlie is here!');
   }
 
-  else if (message.fromMe && message.hasMedia && message.body.startsWith("!download")) {
+  else if (message.hasMedia && message.body.startsWith("!download")) {
     try {
       const media = await message.downloadMedia();
       const noreply = message.body.includes("noreply");
@@ -50,15 +51,15 @@ client.on('message_create', async message => {
           jobs++;
         });
       }
-      message.reply(`Enqueued ${jobs} jobs!`)
+      message.reply(`Enqueued ${jobs} jobs!`);
     }
     catch (e) {
-      console.log(e)
-      message.reply("Error during Enqueue jobs!")
+      console.log(e);
+      message.reply("Error during Enqueue jobs!");
     }
   }
 
-  else if (message.fromMe && message.body.startsWith("!download")) {
+  else if (message.body.startsWith("!download")) {
     try {
       const links = message.body.split(" ").slice(1);
       const noreply = message.body.includes("noreply");
@@ -75,20 +76,47 @@ client.on('message_create', async message => {
   }
 
   else if (message.fromMe && message.body === "!status") {
-    const videoFiles = listSegmentedFiles(videosDir);
+    const videoFiles = listStatusVideos(videosDir);
     for (const filePath of videoFiles) {
       try {
         const media = createVideoMedia(filePath);
         await client.sendMessage(message.from, media);
       } catch (e) {
-        console.log(e)
+        console.log(e);
+        client.sendMessage(message.from, `Error for file: ${filePath}!`);
+      }
+    }
+  }
+
+  else if (message.body === "!preview") {
+    const previewVideos = listPreviewVideos(videosDir);
+    for (const filePath of previewVideos) {
+      try {
+        const media = createVideoMedia(filePath);
+        const caption = filePath.replace(/\.\/videos\/|_compressed/g, "");
+        await client.sendMessage(message.from, media, { caption });
+      } catch (e) {
+        console.log(e);
+        client.sendMessage(message.from, `Error for file: ${filePath}!`);
+      }
+    }
+  }
+
+  else if (message.body.startsWith("!video")) {
+    const files = message.body.split(" ").slice(1);
+    for (const file of files) {
+      try {
+        const media = createVideoMedia(`./videos/${file}`);
+        await client.sendMessage(message.from, media);
+      } catch (e) {
+        console.log(e);
         client.sendMessage(message.from, `Error for file: ${filePath}!`);
       }
     }
   }
 
   else if (message.fromMe && message.body === "!stop") {
-    client.destroy()
+    client.destroy();
   }
 });
 

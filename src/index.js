@@ -32,9 +32,10 @@ setTimeout(() => {
   // Spawn downloader workers
   spawnWorker('./src/workers/download.js');
   spawnWorker('./src/workers/download.js');
-
   // Spawn cutter worker
   spawnWorker('./src/workers/cutter.js');
+  // Spawn gif worker
+  spawnWorker('./src/workers/video_preview.js');
 }, 10000)
 
 function processWorkerNotification(payload) {
@@ -43,6 +44,7 @@ function processWorkerNotification(payload) {
       enqueueJob("cutter_queue", { filePath: file, retryCount: 0, from: payload.from, noreply: payload.noreply });
     })
   } else if (payload.queueName === "cutter_queue") {
+    enqueueJob("preview_queue", { filePath: payload.filePath, retryCount: 0 });
     if (payload.noreply) {
       client.sendMessage(payload.from, `File downloaded: ${payload.filePath.replace("./videos/", "")}`);
     } else {
@@ -53,5 +55,7 @@ function processWorkerNotification(payload) {
     client.sendMessage(payload.from, `Download failed: ${payload.link}`);
   } else if (payload.queueName === "cutter_queue_dlq") {
     client.sendMessage(payload.from, `Segmentation failed: ${payload.filePath.replace("./videos/", "")}`);
+  } else {
+    return;
   }
 }
