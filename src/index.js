@@ -38,24 +38,60 @@ setTimeout(() => {
   spawnWorker('./src/workers/video_preview.js');
 }, 10000)
 
+const QUEUE_NAMES = {
+  DOWNLOAD: "download_queue",
+  CUTTER: "cutter_queue",
+  DOWNLOAD_DLQ: "download_queue_dlq",
+  CUTTER_DLQ: "cutter_queue_dlq",
+  PREVIEW: "preview_queue"
+};
+
 function processWorkerNotification(payload) {
-  if (payload.queueName === "download_queue") {
-    payload.results.forEach(file => {
-      enqueueJob("cutter_queue", { filePath: file, retryCount: 0, from: payload.from, noreply: payload.noreply });
-    })
-  } else if (payload.queueName === "cutter_queue") {
-    enqueueJob("preview_queue", { filePath: payload.filePath, retryCount: 0 });
-    if (payload.noreply) {
-      client.sendMessage(payload.from, `File downloaded: ${payload.filePath.replace("./videos/", "")}`);
-    } else {
-      const media = createVideoMedia(payload.filePath);
-      client.sendMessage(payload.from, media);
-    }
-  } else if (payload.queueName === "download_queue_dlq") {
-    client.sendMessage(payload.from, `Download failed: ${payload.link}`);
-  } else if (payload.queueName === "cutter_queue_dlq") {
-    client.sendMessage(payload.from, `Segmentation failed: ${payload.filePath.replace("./videos/", "")}`);
-  } else {
-    return;
+  const { queueName, filePath, from, noreply, link } = payload;
+
+  switch (queueName) {
+    case QUEUE_NAMES.DOWNLOAD:
+      processDownloadQueue(payload.results, from, noreply);
+      break;
+    case QUEUE_NAMES.CUTTER:
+      processCutterQueue(filePath, from, noreply);
+      break;
+    case QUEUE_NAMES.DOWNLOAD_DLQ:
+      sendDownloadFailureMessage(from, link);
+      break;
+    case QUEUE_NAMES.CUTTER_DLQ:
+      sendSegmentationFailureMessage(from, filePath);
+      break;
+    default:
+      return;
   }
+}
+
+function processDownloadQueue(files, from, noreply) {
+  files.forEach(file => {
+    enqueueJob(QUEUE_NAMES.CUTTER, { filePath: file, retryCount: 0, from, noreply });
+  });
+}
+
+function processCutterQueue(filePath, from, noreply) {
+  enqueueJob(QUEUE_NAMES.PREVIEW, { filePath, retryCount: 0 });
+
+  if (noreply) {
+    sendMessage(from, `File downloaded: ${filePath.replace("./videos/", "")}`);
+  } else {
+    const media = createVideoMedia(filePath);
+    sendMessage(from, media);
+  }
+}
+
+function sendDownloadFailureMessage(from, link) {
+  sendMessage(from, `Download failed: ${link}`);
+}
+
+function sendSegmentationFailureMessage(from, filePath) {
+  sendMessage(from, `Segmentation failed: ${filePath.replace("./videos/", "")}`);
+}
+
+function sendMessage(to, message) {
+  client.sendMessage(to, message);
 }
