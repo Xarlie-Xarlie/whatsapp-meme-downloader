@@ -26,7 +26,17 @@ const downloadScraper = async ({ link }) => {
     index++;
   }
 
-  return links.map((_e, index) => `./videos/${link.split("/p/")[1].replace("/", "")}${index}.mp4`);
+  return links.map((_e, index) => {
+    return createFileName(link, index)
+  })
+}
+
+function createFileName(link, index) {
+  if (link.includes("/p/")) {
+    return `./videos/${link.split("/p/")[1].replace(/\/.*/, "")}${index}.mp4`;
+  } else if (link.includes("/reel/")) {
+    return `./videos/${link.split("/reel/")[1].replace(/\/.*/, "")}${index}.mp4`;
+  }
 }
 
 async function downlaodFile(href) {
@@ -36,7 +46,7 @@ async function downlaodFile(href) {
 }
 
 async function fileWrite(link, index, data) {
-  const filePath = `./videos/${link.split("/p/")[1].replace("/", "")}${index}.mp4`;
+  const filePath = createFileName(link, index);
   await fs.writeFile(filePath, data);
   console.log(`File downloaded and saved to ${filePath}`);
 }

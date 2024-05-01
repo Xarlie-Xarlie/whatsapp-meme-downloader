@@ -49,7 +49,7 @@ function listStatusVideos(directory) {
     }
   })
 
-  segmentedFiles = segmentedFiles.filter(file => !originalFiles[file]).map(file => directory + file);
+  segmentedFiles = segmentedFiles.filter(file => !originalFiles[file] && !file.includes("_compressed")).map(file => directory + file);
 
   // Sort the segmented files list
   segmentedFiles.sort(naturalSort);
