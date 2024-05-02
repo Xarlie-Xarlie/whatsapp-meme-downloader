@@ -34,8 +34,7 @@ function listPreviewVideos(directoryPath, readdirSync = fsReaddirSync) {
         .map(file => directoryPath + file);
 
     return compressed_files;
-  } catch (error) {
-    console.error('Error reading files from directory:', error);
+  } catch (_error) {
     return [];
   }
 }

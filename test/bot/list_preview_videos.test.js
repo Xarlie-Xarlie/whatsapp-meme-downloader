@@ -10,7 +10,7 @@ describe('listPreviewVideos', () => {
     // Mock readdirSync to return mockFiles
     const readdirSync = mock.fn(_path => {
       return mockFiles;
-    })
+    });
 
     const result = listPreviewVideos(directoryPath, readdirSync);
 
@@ -19,7 +19,7 @@ describe('listPreviewVideos', () => {
       '/path/to/directory/video3_compressed.mp4',
     ];
 
-    assert.strictEqual(readdirSync.mock.callCount(), 1)
+    assert.strictEqual(readdirSync.mock.callCount(), 1);
     assert.deepEqual(expectedFiles, result);
   });
 
