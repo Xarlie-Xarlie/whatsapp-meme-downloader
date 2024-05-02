@@ -1,4 +1,4 @@
-import listPreviewVideos from '../../src/bot/list_preview_videos.js';
+import listPreviewVideos from '../../../src/bot/list_preview_videos.js';
 import { describe, it, mock } from "node:test";
 import assert from "node:assert";
 

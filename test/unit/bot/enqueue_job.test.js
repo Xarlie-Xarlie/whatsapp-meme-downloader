@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import amqp from 'amqplib/callback_api.js';
 import { describe, it } from "node:test";
-import enqueueJob from '../../src/bot/enqueue_job.js';
+import enqueueJob from '../../../src/bot/enqueue_job.js';
 
 describe('enqueueJob', () => {
   it('should enqueue a job into the specified queue', () => {

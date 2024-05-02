@@ -1,4 +1,4 @@
-import listStatusVideos from '../../src/bot/list_status_videos.js';
+import listStatusVideos from '../../../src/bot/list_status_videos.js';
 import { describe, it, mock } from "node:test";
 import assert from "node:assert";
 
