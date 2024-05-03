@@ -36,11 +36,6 @@ function naturalSort(a, b) {
   const partNumberA = extractPartNumber(a);
   const partNumberB = extractPartNumber(b);
 
-  if (partNumberA === null || partNumberB === null) {
-    // If extraction fails, use default string comparison
-    return a.localeCompare(b);
-  }
-
   const fileNameA = a.replace(/_part_\d\.mp4/, "");
   const fileNameB = b.replace(/_part_\d\.mp4/, "");
 

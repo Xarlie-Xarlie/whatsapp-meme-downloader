@@ -35,7 +35,7 @@ setTimeout(() => {
   // Spawn cutter worker
   spawnWorker('./src/workers/cutter.js');
   // Spawn gif worker
-  spawnWorker('./src/workers/video_preview.js');
+  // spawnWorker('./src/workers/video_preview.js');
 }, 10000)
 
 const QUEUE_NAMES = {
@@ -74,7 +74,7 @@ function processDownloadQueue(files, from, noreply) {
 }
 
 function processCutterQueue(filePath, from, noreply) {
-  enqueueJob(QUEUE_NAMES.PREVIEW, { filePath, retryCount: 0 });
+  // enqueueJob(QUEUE_NAMES.PREVIEW, { filePath, retryCount: 0 });
 
   if (noreply) {
     sendMessage(from, `File downloaded: ${filePath.replace("./videos/", "")}`);
