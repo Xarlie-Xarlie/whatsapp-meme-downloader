@@ -1,12 +1,10 @@
-import { readdirSync as fsReaddirSync } from 'node:fs';
+import fs from 'node:fs';
 
 /**
  * Lists all preview videos from a directory.
  * A preview video is a video that has "\_compressed" in it's name.
  *
  * @param {string} directoryPath - The directory where the preview files are.
- * @param {function} readdirSync - The callback to read the directory. default is the readdirSync from "node:fs". Also used to mock unit tests.
- *
  * @returns {string[]} An string array with the path of the compressed files.
  *
  * @example
@@ -24,16 +22,13 @@ import { readdirSync as fsReaddirSync } from 'node:fs';
  * listPreviewVideos("/path/to/unexistent/directory/");
  * []
  */
-function listPreviewVideos(directoryPath, readdirSync = fsReaddirSync) {
+function listPreviewVideos(directoryPath) {
   try {
-    const files = readdirSync(directoryPath);
+    const files = fs.readdirSync(directoryPath);
 
-    const compressed_files =
-      files
-        .filter(file => file.includes("compressed"))
-        .map(file => directoryPath + file);
-
-    return compressed_files;
+    return files
+      .filter(file => file.includes("compressed"))
+      .map(file => directoryPath + file);
   } catch (_error) {
     return [];
   }

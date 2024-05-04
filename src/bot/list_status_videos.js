@@ -1,4 +1,4 @@
-import { readdirSync as fsReadDirSync } from 'node:fs';
+import fs from 'node:fs';
 import { parse, extname } from 'node:path';
 
 /**
@@ -54,7 +54,6 @@ function naturalSort(a, b) {
  * No segmantation was needed.
  *
  * @param {string} directoryPath - The directory where the status videos are.
- * @param {function} readdirSync - The callback to read the directory. default is the readdirSync from "node:fs". Also used to mock unit tests.
  * @return {string[]} - Status Videos.
  *
  * @example
@@ -72,9 +71,9 @@ function naturalSort(a, b) {
  * listStatusVideos("/path/to/unexistent/directory")
  * []
  */
-function listStatusVideos(directory, readdirSync = fsReadDirSync) {
+function listStatusVideos(directory) {
   try {
-    const files = readdirSync(directory);
+    const files = fs.readdirSync(directory);
     let segmentedFiles = [];
 
     const originalFiles = {}; // Object to store original file names

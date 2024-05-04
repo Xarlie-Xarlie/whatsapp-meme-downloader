@@ -1,18 +1,24 @@
 import listStatusVideos from '../../../src/bot/list_status_videos.js';
-import { describe, it, mock } from "node:test";
+import { describe, it, mock, beforeEach } from "node:test";
 import assert from "node:assert";
+import fs from "node:fs";
 
 describe('listStatusVideos', () => {
+  let context;
+
+  beforeEach(() => {
+    mock.restoreAll();
+    context = mock.method(fs, 'readdirSync');
+  });
+
   it('should list mp4 files in the directory', () => {
     const directoryPath = '/path/to/directory/';
     const mockFiles = ['video1.mp4', 'video2.mp4', 'video3.mp4'];
 
     // Mock readdirSync to return mockFiles
-    const readdirSync = mock.fn(_path => {
-      return mockFiles;
-    })
+    context.mock.mockImplementation(() => mockFiles);
 
-    const result = listStatusVideos(directoryPath, readdirSync);
+    const result = listStatusVideos(directoryPath);
 
     const expectedFiles = [
       '/path/to/directory/video1.mp4',
@@ -20,7 +26,7 @@ describe('listStatusVideos', () => {
       '/path/to/directory/video3.mp4',
     ];
 
-    assert.strictEqual(readdirSync.mock.callCount(), 1);
+    assert.strictEqual(fs.readdirSync.mock.callCount(), 1);
     assert.deepEqual(expectedFiles, result);
   });
 
@@ -29,11 +35,9 @@ describe('listStatusVideos', () => {
     const mockFiles = ['video1.mp4', 'video1_part_0.mp4', 'video1_part_1.mp4'];
 
     // Mock readdirSync to return mockFiles
-    const readdirSync = mock.fn(_path => {
-      return mockFiles;
-    })
+    context.mock.mockImplementation(() => mockFiles);
 
-    const result = listStatusVideos(directoryPath, readdirSync);
+    const result = listStatusVideos(directoryPath);
 
     const expectedFiles = [
       '/path/to/directory/video1_part_0.mp4',
@@ -41,7 +45,7 @@ describe('listStatusVideos', () => {
     ];
 
     assert.deepEqual(result, expectedFiles);
-    assert(readdirSync.mock.callCount(), 1);
+    assert.strictEqual(fs.readdirSync.mock.callCount(), 1);
   });
 
   it("should return the segmented files over the original, but keep those who aren't semented", () => {
@@ -49,11 +53,9 @@ describe('listStatusVideos', () => {
     const mockFiles = ['video1.mp4', 'video2.mp4', 'video2_part_0.mp4', 'video2_part_1.mp4'];
 
     // Mock readdirSync to throw an error
-    const readdirSync = mock.fn(_path => {
-      return mockFiles;
-    })
+    context.mock.mockImplementation(() => mockFiles);
 
-    const result = listStatusVideos(directoryPath, readdirSync);
+    const result = listStatusVideos(directoryPath);
 
     const expectedFiles = [
       '/path/to/directory/video1.mp4',
@@ -62,7 +64,7 @@ describe('listStatusVideos', () => {
     ];
 
     assert.deepEqual(result, expectedFiles);
-    assert(readdirSync.mock.callCount(), 1);
+    assert.strictEqual(fs.readdirSync.mock.callCount(), 1);
   });
 
   it("should return the segmented files in order", () => {
@@ -70,11 +72,9 @@ describe('listStatusVideos', () => {
     const mockFiles = ['video1_part_2.mp4', 'video1_part_1.mp4', 'video1_part_0.mp4'];
 
     // Mock readdirSync to throw an error
-    const readdirSync = mock.fn(_path => {
-      return mockFiles;
-    })
+    context.mock.mockImplementation(() => mockFiles);
 
-    const result = listStatusVideos(directoryPath, readdirSync);
+    const result = listStatusVideos(directoryPath);
 
     const expectedFiles = [
       '/path/to/directory/video1_part_0.mp4',
@@ -83,7 +83,7 @@ describe('listStatusVideos', () => {
     ];
 
     assert.deepEqual(result, expectedFiles);
-    assert(readdirSync.mock.callCount(), 1);
+    assert.strictEqual(fs.readdirSync.mock.callCount(), 1);
   });
 
   it("should return the segmented files in order per video", () => {
@@ -91,11 +91,9 @@ describe('listStatusVideos', () => {
     const mockFiles = ['video1_part_1.mp4', 'video1_part_0.mp4', 'video2_part_1.mp4', 'video2_part_0.mp4'];
 
     // Mock readdirSync to throw an error
-    const readdirSync = mock.fn(_path => {
-      return mockFiles;
-    })
+    context.mock.mockImplementation(() => mockFiles);
 
-    const result = listStatusVideos(directoryPath, readdirSync);
+    const result = listStatusVideos(directoryPath);
 
     const expectedFiles = [
       '/path/to/directory/video1_part_0.mp4',
@@ -105,7 +103,7 @@ describe('listStatusVideos', () => {
     ];
 
     assert.deepEqual(result, expectedFiles);
-    assert(readdirSync.mock.callCount(), 1);
+    assert.strictEqual(fs.readdirSync.mock.callCount(), 1);
   });
 
 
@@ -114,11 +112,9 @@ describe('listStatusVideos', () => {
     const mockFiles = ['video1.mp4', 'video2_part_1.mp4', 'video2_part_0.mp4', 'video1_compressed.mp4'];
 
     // Mock readdirSync to throw an error
-    const readdirSync = mock.fn(_path => {
-      return mockFiles;
-    })
+    context.mock.mockImplementation(() => mockFiles);
 
-    const result = listStatusVideos(directoryPath, readdirSync);
+    const result = listStatusVideos(directoryPath);
 
     const expectedFiles = [
       '/path/to/directory/video1.mp4',
@@ -127,20 +123,18 @@ describe('listStatusVideos', () => {
     ];
 
     assert.deepEqual(result, expectedFiles);
-    assert(readdirSync.mock.callCount(), 1);
+    assert.strictEqual(fs.readdirSync.mock.callCount(), 1);
   });
 
   it('should return an empty array if an error occurs during file reading', () => {
     const directoryPath = '/path/to/directory/';
 
     // Mock readdirSync to throw an error
-    const readdirSync = mock.fn(_path => {
-      throw new Error('Test error');
-    })
+    context.mock.mockImplementation(() => new Error('Test error'));
 
-    const result = listStatusVideos(directoryPath, readdirSync);
+    const result = listStatusVideos(directoryPath);
 
     assert.deepEqual(result, []);
-    assert(readdirSync.mock.callCount(), 1);
+    assert.strictEqual(fs.readdirSync.mock.callCount(), 1);
   });
 });
