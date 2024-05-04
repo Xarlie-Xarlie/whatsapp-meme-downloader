@@ -13,7 +13,7 @@ import amqp from 'amqplib/callback_api.js';
   * @example
   * <caption>Failed to enqueue a job.</caption>
   * enqueueJob("my_queue", {message: "hello from Queue"})
-  *Enqueue Failed for queue: my_queue and payload: {message: "hello from Queue"}.
+  * Enqueue Failed for queue: my_queue and payload: {message: "hello from Queue"}.
   */
 function enqueueJob(queueName, payload) {
   try {
@@ -26,17 +26,13 @@ function enqueueJob(queueName, payload) {
           throw error1;
         }
 
-        channel.assertQueue(queueName, {
-          durable: true
-        });
+        channel.assertQueue(queueName, { durable: true });
         channel.sendToQueue(queueName, Buffer.from(JSON.stringify(payload)));
 
         console.log(`Enqueued Job for queue: ${queueName}`);
       });
-      setTimeout(function() {
-        connection.close();
-        return;
-      }, 500);
+      connection.close();
+      return;
     });
   } catch (_e) {
     return `Enqueue Failed for queue: ${queueName} and payload: ${payload}.`
