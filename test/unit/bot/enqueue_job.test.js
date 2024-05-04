@@ -3,7 +3,7 @@ import amqp from 'amqplib/callback_api.js';
 import { describe, it } from "node:test";
 import enqueueJob from '../../../src/bot/enqueue_job.js';
 
-describe('enqueueJob', () => {
+describe('enqueueJob Unit Tests', () => {
   it('should enqueue a job into the specified queue', () => {
     const queueName = 'testQueue';
     const payload = { message: 'Hello, RabbitMQ!' };
