@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, mock } from 'node:test';
 import assert from 'node:assert';
-import consumer from '../../../src/consumer/consumer.js';
+import dlqConsumer from '../../../src/consumer/dlq_consumer.js';
 import amqp from 'amqplib/callback_api.js';
 
 // Mock implementation of amqp.connect for testing
@@ -11,24 +11,28 @@ function mockAmqpConnect(url, callback, message_payload) {
       // Simulate channel creation
       const channel = {
         assertQueue: (queueName, options) => {
-          assert.strictEqual(queueName, 'testQueue');
+          assert.strictEqual(queueName, 'testQueue_dlq');
           assert.deepStrictEqual(options, { durable: true });
         },
         prefetch: (qtyMessages) => { assert.strictEqual(qtyMessages, 1) }, // Stub prefetch method
         consume: (queueName, consumeCallback, options) => {
-          assert.strictEqual(queueName, 'testQueue');
+          assert.strictEqual(queueName, 'testQueue_dlq');
           assert.strictEqual(options.noAck, false);
 
           // Simulate message consumption
           consumeCallback(message_payload);
         },
         sendToQueue: (queueName, message, options) => {
-          assert.deepStrictEqual(queueName, "testQueue_dlq");
+          assert.deepStrictEqual(queueName, "testQueue");
           assert.deepStrictEqual(options, { persistent: true });
-          assert.deepEqual(JSON.parse(message.toString()), { message: 'Test message 2' });
+          assert.deepEqual(JSON.parse(message.toString()), { message: 'Test message', retryCount: 1 });
         },
         ack: message => {
           assert.ok(JSON.parse(message.content.toString()));
+        },
+        reject: (message, renqueue) => {
+          assert.ok(message);
+          assert.strictEqual(renqueue, false);
         }
       };
       createChannelCallback(null, channel); // Invoke callback with mock channel
@@ -38,7 +42,7 @@ function mockAmqpConnect(url, callback, message_payload) {
   callback(null, connection); // Invoke callback with mock connection
 };
 
-describe('Consumer Unit Tests', () => {
+describe('dlqConsumer Module', () => {
   let context;
 
   beforeEach(() => {
@@ -46,54 +50,54 @@ describe('Consumer Unit Tests', () => {
     context = mock.method(amqp, 'connect');
   });
 
-  it('should consume messages from a queue', () => {
-    // Mock consumeCallback and eventCallback
-    const consumeCallback = mock.fn(message => {
-      return assert.deepEqual(message, { message: 'Test message 1' });
-    });
+  it('should consume messages', () => {
+    const eventCallback = mock.fn(() => { });
 
-    const payload = { content: Buffer.from(JSON.stringify({ message: 'Test message 1' })) };
-
-    // mock amqp.connect
+    const payload = { content: Buffer.from(JSON.stringify({ retryCount: 0, message: 'Test message' })) };
     context.mock.mockImplementation((url, callback) => mockAmqpConnect(url, callback, payload));
 
-    // Call the consumer module
-    consumer('testQueue', consumeCallback);
+    dlqConsumer('testQueue_dlq', eventCallback);
 
-    // Optional: Assert eventCallback interactions if provided
     assert.strictEqual(amqp.connect.mock.callCount(), 1);
-    assert.strictEqual(consumeCallback.mock.callCount(), 1);
+    assert.strictEqual(eventCallback.mock.callCount(), 0);
+  });
+
+  it('should reject messages when maximum retry count reached', () => {
+    const eventCallback = mock.fn(payload => {
+      assert.deepStrictEqual(payload, { message: 'Test message', retryCount: 5, queueName: 'testQueue_dlq' });
+    });
+
+    const payload = { content: Buffer.from(JSON.stringify({ retryCount: 5, message: 'Test message' })) };
+    context.mock.mockImplementation((url, callback) => mockAmqpConnect(url, callback, payload));
+
+    dlqConsumer('testQueue_dlq', eventCallback);
+
+    assert.strictEqual(amqp.connect.mock.callCount(), 1);
+    assert.strictEqual(eventCallback.mock.callCount(), 1);
   });
 
   it('should enqueue messages in dlq when an error occurs in callback', () => {
-    // Mock consumeCallback and eventCallback
-    const consumeCallback = mock.fn(_message => {
-      throw "consumer error";
+    const eventCallback = mock.fn(_payload => {
+      throw "eventCallback error";
     });
 
-    const payload = { content: Buffer.from(JSON.stringify({ message: 'Test message 2' })) }
+    const payload = { content: Buffer.from(JSON.stringify({ retryCount: 5, message: 'Test message' })) };
 
-    // mock amqp.connect
     context.mock.mockImplementation((url, callback) => mockAmqpConnect(url, callback, payload));
 
-    // Call the consumer module
-    consumer('testQueue', consumeCallback);
+    assert.throws(() => dlqConsumer('testQueue_dlq', eventCallback), /eventCallback error/);
 
-    // Optional: Assert eventCallback interactions if provided
     assert.strictEqual(amqp.connect.mock.callCount(), 1);
-    assert.strictEqual(consumeCallback.mock.callCount(), 1);
+    assert.strictEqual(eventCallback.mock.callCount(), 1);
   });
 
   it('should crashes when connection is not available', () => {
-    // Mock consumeCallback and eventCallback
-    const consumeCallback = mock.fn(() => { });
+    const eventCallback = mock.fn(() => { });
 
-    // mock amqp.connect
     context.mock.mockImplementation(() => { throw "AMQP Connection Error" });
 
-    // Optional: Assert eventCallback interactions if provided
     assert.strictEqual(amqp.connect.mock.callCount(), 0);
-    assert.strictEqual(consumeCallback.mock.callCount(), 0);
-    assert.throws(() => consumer('testQueue', consumeCallback), /AMQP Connection Error/);
+    assert.strictEqual(eventCallback.mock.callCount(), 0);
+    assert.throws(() => dlqConsumer('testQueue_dlq', eventCallback), /AMQP Connection Error/);
   });
 });

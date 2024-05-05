@@ -14,7 +14,7 @@ import amqp from 'amqplib/callback_api.js';
  * <caption>Starts consuming a queue.</caption>
  * consumer(
  *   "my queue",
- *   (msg) => {console.log()},
+ *   (msg) => {console.log(msg)},
  *   (results) => {results.forEach(e => console.log(e))}
  * )
  * Listening to queue 'My queue'
