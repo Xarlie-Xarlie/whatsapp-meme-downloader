@@ -42,7 +42,7 @@ function mockAmqpConnect(url, callback, message_payload) {
   callback(null, connection); // Invoke callback with mock connection
 };
 
-describe('dlqConsumer Module', () => {
+describe('dlqConsumer Unit Tests', () => {
   let context;
 
   beforeEach(() => {
