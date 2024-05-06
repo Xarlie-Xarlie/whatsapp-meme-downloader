@@ -148,7 +148,7 @@ describe('segmentVideoAtPath Unit Tests', () => {
     assert.strictEqual(fs.existsSync.mock.callCount(), 0);
   });
 
-  it('should return undefined when an error is returned from stdeer', async () => {
+  it('should return undefined when an error is returned from stderr', async () => {
     const filePath = '/path/to/video.mp4';
 
     childProcessContext.mock.mockImplementation((_command, callback) => {
@@ -157,7 +157,7 @@ describe('segmentVideoAtPath Unit Tests', () => {
 
     fsContext.mock.mockImplementation(() => false);
 
-    const results = segmentVideoAtPath({ filePath });
+    const results = await segmentVideoAtPath({ filePath });
 
     assert.deepStrictEqual(results, undefined);
     assert.strictEqual(childProcess.exec.mock.callCount(), 1);
