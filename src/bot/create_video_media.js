@@ -1,6 +1,6 @@
-import MessageMedia from 'whatsapp-web.js/src/structures/MessageMedia.js'
-import fs from 'fs';
-import path from 'path';
+import MessageMedia from "whatsapp-web.js/src/structures/MessageMedia.js";
+import fs from "node:fs";
+import path from "node:path";
 
 /**
  * Create a video Message Media from whatsapp-web.js.

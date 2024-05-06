@@ -1,8 +1,8 @@
 import assert from "node:assert";
 import { describe, it } from "node:test";
 import path from "node:path";
-import { statSync } from "node:fs"
-import MessageMedia from 'whatsapp-web.js/src/structures/MessageMedia.js'
+import { statSync } from "node:fs";
+import MessageMedia from 'whatsapp-web.js/src/structures/MessageMedia.js';
 import createVideoMedia from '../../../src/bot/create_video_media.js';
 //
 // Helper function to resolve relative paths
