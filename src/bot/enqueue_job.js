@@ -31,8 +31,10 @@ function enqueueJob(queueName, payload) {
 
         console.log(`Enqueued Job for queue: ${queueName}`);
       });
-      connection.close();
-      return;
+      setTimeout(() => {
+        connection.close();
+        return;
+      }, 500)
     });
   } catch (_e) {
     return `Enqueue Failed for queue: ${queueName} and payload: ${payload}.`
