@@ -2,7 +2,7 @@ import { Client } from 'whatsapp-web.js';
 import createVideoMedia from './create_video_media.js';
 import LocalAuth from 'whatsapp-web.js/src/authStrategies/LocalAuth.js';
 import listStatusVideos from './list_status_videos.js';
-import listPreviewVideos from './list_preview_videos.js';
+// import listPreviewVideos from './list_preview_videos.js';
 import enqueueJob from './enqueue_job.js';
 import qrcode from 'qrcode-terminal';
 
@@ -81,20 +81,6 @@ client.on('message_create', async message => {
       try {
         const media = createVideoMedia(filePath);
         await client.sendMessage(message.from, media);
-      } catch (e) {
-        console.log(e);
-        client.sendMessage(message.from, `Error for file: ${filePath}!`);
-      }
-    }
-  }
-
-  else if (message.body === "!preview") {
-    const previewVideos = listPreviewVideos(videosDir);
-    for (const filePath of previewVideos) {
-      try {
-        const media = createVideoMedia(filePath);
-        const caption = filePath.replace(/\.\/videos\/|_compressed/g, "");
-        await client.sendMessage(message.from, media, { caption });
       } catch (e) {
         console.log(e);
         client.sendMessage(message.from, `Error for file: ${filePath}!`);
