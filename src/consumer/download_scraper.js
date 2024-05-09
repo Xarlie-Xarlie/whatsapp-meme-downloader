@@ -3,7 +3,8 @@ import fs from 'fs/promises';
 import axios from "axios";
 
 const url = "https://saveig.app/en/instagram-video-downloader"
-const downloadScraper = async ({ link }) => {
+
+async function downloadScraper({ link }) {
   const browser = await puppeteer.launch({
     headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -21,13 +22,13 @@ const downloadScraper = async ({ link }) => {
   await browser.close();
 
   for await (var [index, href] of links.entries()) {
-    const response = await downlaodFile(href)
+    const response = await downloadFile(href);
     await fileWrite(link, index, response.data);
     index++;
   }
 
   return links.map((_e, index) => {
-    return createFileName(link, index)
+    return createFileName(link, index);
   })
 }
 
@@ -39,7 +40,7 @@ function createFileName(link, index) {
   }
 }
 
-async function downlaodFile(href) {
+async function downloadFile(href) {
   return axios.get(href, {
     responseType: 'arraybuffer' // To get binary data
   });
