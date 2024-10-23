@@ -1,12 +1,12 @@
 # WhatsApp Meme Downloader
 
-The goal of this project is to download memes from various social media platforms, such as Instagram, Facebook, Twitter, TikTok, etc. Currently, it only supports Instagram.
+The goal of this project is to download memes from social media platforms, such as Instagram, Facebook, Twitter, TikTok, etc. For now, it supports Instagram.
 
 ---
 
 ## Disclaimer
 
-I'm using [Whatsapp-web-js](https://wwebjs.dev/), which implies that it is not fully guaranteed to avoid being banned by WhatsApp. Use it at your own risk.
+I'm using [Whatsapp-web-js](https://wwebjs.dev/), which implies that is not fully guaranteed to avoid ban from WhatsApp. Use it at your own risk.
 
 I have been using it since 2024-04 and haven't faced any problems, so you should be fine.
 
@@ -15,16 +15,19 @@ I have been using it since 2024-04 and haven't faced any problems, so you should
 ## How to Run
 
 Clone the repository:
+
 ```bash
 git clone https://github.com/Xarlie-Xarlie/whatsapp-meme-downloader.git
 ```
 
 Use Docker Compose to run:
+
 ```bash
 docker-compose up -d
 ```
 
 Follow the logs to get the QR code to log in to your WhatsApp account:
+
 ```bash
 docker-compose logs -f wbot
 ```
@@ -42,6 +45,7 @@ Puppeteer uses Google Chrome to run the bot and web scraping script. If you want
 ### RabbitMQ Setup
 
 You still need to run RabbitMQ:
+
 ```bash
 docker-compose up -d rabbitmq
 ```
@@ -101,14 +105,13 @@ All other commands can be used by anyone who sends you a message.
 This project uses [Node Test Runner](https://nodejs.org/api/test.html#test-runner).
 
 Run tests with:
+
 ```bash
 yarn test
 ```
+
 or
+
 ```bash
 npm test
 ```
-
----
-
-This revised version clarifies and improves the readability of your README.md file. Let me know if you need further adjustments!

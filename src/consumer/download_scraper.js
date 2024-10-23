@@ -1,14 +1,14 @@
-import puppeteer from "puppeteer";
+import puppeteer from 'puppeteer';
 import fs from 'fs/promises';
-import axios from "axios";
+import axios from 'axios';
 
-const url = "https://saveig.app/en/instagram-video-downloader"
+const url = 'https://saveig.app/en/instagram-video-downloader';
 
 async function downloadScraper({ link }) {
   const browser = await puppeteer.launch({
     headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    executablePath: "/usr/bin/google-chrome-stable"
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    executablePath: '/usr/bin/google-chrome-stable'
   });
   const page = await browser.newPage();
   await page.goto(url);
@@ -18,7 +18,9 @@ async function downloadScraper({ link }) {
 
   await page.click('button');
   await page.waitForSelector('.abutton');
-  const links = await page.$$eval('.abutton', aTags => { return aTags.map(a => a.href) });
+  const links = await page.$$eval('.abutton', (aTags) => {
+    return aTags.map((a) => a.href);
+  });
   await browser.close();
 
   for await (var [index, href] of links.entries()) {
@@ -29,20 +31,20 @@ async function downloadScraper({ link }) {
 
   return links.map((_e, index) => {
     return createFileName(link, index);
-  })
+  });
 }
 
 function createFileName(link, index) {
-  if (link.includes("/p/")) {
-    return `./videos/${link.split("/p/")[1].replace(/\/.*/, "")}${index}.mp4`;
-  } else if (link.includes("/reel/")) {
-    return `./videos/${link.split("/reel/")[1].replace(/\/.*/, "")}${index}.mp4`;
+  if (link.includes('/p/')) {
+    return `./videos/${link.split('/p/')[1].replace(/\/.*/, '')}${index}.mp4`;
+  } else if (link.includes('/reel/')) {
+    return `./videos/${link.split('/reel/')[1].replace(/\/.*/, '')}${index}.mp4`;
   }
 }
 
 async function downloadFile(href) {
   return axios.get(href, {
-    responseType: 'arraybuffer' // To get binary data
+    responseType: 'arraybuffer'
   });
 }
 

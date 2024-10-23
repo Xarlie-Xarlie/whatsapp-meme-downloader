@@ -25,8 +25,7 @@ import { parse, extname } from 'node:path';
     ]
   */
 function naturalSort(a, b) {
-  const extractPartNumber = str => {
-    // Match the part number using regex
+  const extractPartNumber = (str) => {
     const matchA = str.match(/_part_(\d+)/);
     if (!matchA) return null;
 
@@ -36,14 +35,13 @@ function naturalSort(a, b) {
   const partNumberA = extractPartNumber(a);
   const partNumberB = extractPartNumber(b);
 
-  const fileNameA = a.replace(/_part_\d\.mp4/, "");
-  const fileNameB = b.replace(/_part_\d\.mp4/, "");
+  const fileNameA = a.replace(/_part_\d\.mp4/, '');
+  const fileNameB = b.replace(/_part_\d\.mp4/, '');
 
-  // Compare by partNumber and fileName
   if (partNumberA < partNumberB && fileNameA === fileNameB) return -1;
   if (partNumberA > partNumberB && fileNameA === fileNameB) return 1;
 
-  return 0; // Equal
+  return 0;
 }
 
 /**
@@ -76,30 +74,27 @@ function listStatusVideos(directory) {
     const files = fs.readdirSync(directory);
     let segmentedFiles = [];
 
-    const originalFiles = {}; // Object to store original file names
+    const originalFiles = {};
 
-    files.forEach(file => {
+    files.forEach((file) => {
       const fileName = parse(file).name;
       const fileParts = fileName.split('_part_');
 
-      // Check if the file is segmented
       if (fileParts.length > 1) {
-        // Extract the base name and add segments to the list
         const baseName = fileParts[0] + extname(file);
         if (!originalFiles[baseName]) {
-          originalFiles[baseName] = true; // Store the original file name
+          originalFiles[baseName] = true;
           segmentedFiles.push(baseName);
         }
         segmentedFiles.push(file);
       } else {
-        // If the file is not segmented, add it directly to the list
         segmentedFiles.push(file);
       }
     });
 
     return segmentedFiles
-      .filter(file => !originalFiles[file] && !file.includes("_compressed"))
-      .map(file => directory + file)
+      .filter((file) => !originalFiles[file] && !file.includes('_compressed'))
+      .map((file) => directory + file)
       .sort(naturalSort);
   } catch (_e) {
     return [];

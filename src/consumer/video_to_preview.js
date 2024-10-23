@@ -26,9 +26,10 @@ async function createPreviewVideoAtPath({ filePath }) {
     const fileName = parse(filePath).name;
     const outputPath = `${dirname(filePath)}/${fileName}_compressed.mp4`;
 
-    // Check if the output compressed video file already exists
     if (existsSync(outputPath)) {
-      console.log(`Compressed video already exists: ${outputPath}. Skipping compression.`);
+      console.log(
+        `Compressed video already exists: ${outputPath}. Skipping compression.`
+      );
       return outputPath;
     }
 

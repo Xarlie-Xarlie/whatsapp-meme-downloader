@@ -1,8 +1,8 @@
-import assert from "node:assert";
-import { describe, it, beforeEach, mock } from "node:test";
-import childProcess from "node:child_process";
-import fs from "node:fs";
-import segmentVideoAtPath from "../../../src/consumer/segment_video.js";
+import assert from 'node:assert';
+import { describe, it, beforeEach, mock } from 'node:test';
+import childProcess from 'node:child_process';
+import fs from 'node:fs';
+import segmentVideoAtPath from '../../../src/consumer/segment_video.js';
 
 describe('segmentVideoAtPath Unit Tests', () => {
   let childProcessContext;
@@ -12,7 +12,7 @@ describe('segmentVideoAtPath Unit Tests', () => {
     mock.restoreAll();
     childProcessContext = mock.method(childProcess, 'exec');
     fsContext = mock.method(fs, 'existsSync');
-  })
+  });
 
   it('should segment a video of 60 seconds into two videos', async () => {
     const filePath = '/path/to/video.mp4';
@@ -25,7 +25,10 @@ describe('segmentVideoAtPath Unit Tests', () => {
 
     const results = await segmentVideoAtPath({ filePath });
 
-    assert.deepStrictEqual(results, ["/path/to/video_part_0.mp4", "/path/to/video_part_1.mp4"]);
+    assert.deepStrictEqual(results, [
+      '/path/to/video_part_0.mp4',
+      '/path/to/video_part_1.mp4'
+    ]);
     assert.strictEqual(childProcess.exec.mock.callCount(), 3);
     assert.strictEqual(fs.existsSync.mock.callCount(), 2);
   });
@@ -42,9 +45,9 @@ describe('segmentVideoAtPath Unit Tests', () => {
     const results = await segmentVideoAtPath({ filePath });
 
     assert.deepStrictEqual(results, [
-      "/path/to/video_part_0.mp4",
-      "/path/to/video_part_1.mp4",
-      "/path/to/video_part_2.mp4"
+      '/path/to/video_part_0.mp4',
+      '/path/to/video_part_1.mp4',
+      '/path/to/video_part_2.mp4'
     ]);
 
     assert.strictEqual(childProcess.exec.mock.callCount(), 4);
@@ -111,7 +114,7 @@ describe('segmentVideoAtPath Unit Tests', () => {
 
     const results = await segmentVideoAtPath({ filePath });
 
-    assert.deepStrictEqual(results, ["/path/to/video_part_1.mp4"]);
+    assert.deepStrictEqual(results, ['/path/to/video_part_1.mp4']);
     assert.strictEqual(childProcess.exec.mock.callCount(), 2);
     assert.strictEqual(fs.existsSync.mock.callCount(), 2);
   });
@@ -127,7 +130,10 @@ describe('segmentVideoAtPath Unit Tests', () => {
 
     const results = await segmentVideoAtPath({ filePath });
 
-    assert.deepStrictEqual(results, ['/path/to/video_part_0.mp4', '/path/to/video_part_1.mp4']);
+    assert.deepStrictEqual(results, [
+      '/path/to/video_part_0.mp4',
+      '/path/to/video_part_1.mp4'
+    ]);
     assert.strictEqual(childProcess.exec.mock.callCount(), 3);
     assert.strictEqual(fs.existsSync.mock.callCount(), 2);
   });
@@ -136,7 +142,7 @@ describe('segmentVideoAtPath Unit Tests', () => {
     const filePath = '/path/to/video.mp4';
 
     childProcessContext.mock.mockImplementation((_command, callback) => {
-      callback("testError", '31.0', null);
+      callback('testError', '31.0', null);
     });
 
     fsContext.mock.mockImplementation(() => false);
@@ -152,7 +158,7 @@ describe('segmentVideoAtPath Unit Tests', () => {
     const filePath = '/path/to/video.mp4';
 
     childProcessContext.mock.mockImplementation((_command, callback) => {
-      callback(null, '31.0', "test stderr");
+      callback(null, '31.0', 'test stderr');
     });
 
     fsContext.mock.mockImplementation(() => false);
@@ -167,7 +173,9 @@ describe('segmentVideoAtPath Unit Tests', () => {
   it('should return undefined when an exception occurs in exec', async () => {
     const filePath = '/path/to/video.mp4';
 
-    childProcessContext.mock.mockImplementation(() => { throw "childProcess error test" });
+    childProcessContext.mock.mockImplementation(() => {
+      throw 'childProcess error test';
+    });
 
     fsContext.mock.mockImplementation(() => false);
 
@@ -185,7 +193,9 @@ describe('segmentVideoAtPath Unit Tests', () => {
       callback(null, '31.0', null);
     });
 
-    fsContext.mock.mockImplementation(() => { throw "existsSync test error" });
+    fsContext.mock.mockImplementation(() => {
+      throw 'existsSync test error';
+    });
 
     const results = await segmentVideoAtPath({ filePath });
 

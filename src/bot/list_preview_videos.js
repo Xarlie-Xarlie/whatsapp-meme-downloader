@@ -27,8 +27,8 @@ function listPreviewVideos(directoryPath) {
     const files = fs.readdirSync(directoryPath);
 
     return files
-      .filter(file => file.includes("compressed"))
-      .map(file => directoryPath + file);
+      .filter((file) => file.includes('compressed'))
+      .map((file) => directoryPath + file);
   } catch (_error) {
     return [];
   }

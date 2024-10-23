@@ -1,12 +1,11 @@
-import assert from "node:assert";
+import assert from 'node:assert';
 import amqp from 'amqplib/callback_api.js';
-import { describe, it, beforeEach, mock } from "node:test";
+import { describe, it, beforeEach, mock } from 'node:test';
 import enqueueJob from '../../../src/bot/enqueue_job.js';
 
 function mockAmqpConnect(url, callback) {
   const connection = {
     createChannel: (channelCallback) => {
-      // Simulate successful channel creation
       const channel = {
         assertQueue: (queueName, options) => {
           assert.equal(queueName, 'testQueue');
@@ -20,7 +19,7 @@ function mockAmqpConnect(url, callback) {
       };
       channelCallback(null, channel);
     },
-    close: () => { }
+    close: () => {}
   };
   assert.strictEqual(url, 'amqp://guest:guest@rabbitmq:5672/');
   callback(null, connection);
@@ -38,19 +37,19 @@ describe('enqueueJob Unit Tests', () => {
     const queueName = 'testQueue';
     const payload = { message: 'Hello, RabbitMQ!' };
 
-    // mock amqp connect
-    context.mock.mockImplementation((url, callback) => mockAmqpConnect(url, callback));
+    context.mock.mockImplementation((url, callback) =>
+      mockAmqpConnect(url, callback)
+    );
 
-    // Call the enqueueJob function
     assert.strictEqual(enqueueJob(queueName, payload), undefined);
     assert.strictEqual(amqp.connect.mock.callCount(), 1);
   });
 
   it('should handle connection error', () => {
-    // Mock amqplib connect function to simulate connection error
-    context.mock.mockImplementation(() => { throw "AMQP connection error" });
+    context.mock.mockImplementation(() => {
+      throw 'AMQP connection error';
+    });
 
-    // Call enqueueJob with test arguments
     const queueName = 'testQueue';
     const payload = { message: 'Try to simulate connection error' };
 
@@ -62,9 +61,10 @@ describe('enqueueJob Unit Tests', () => {
   });
 
   it('should handle channel creation error', () => {
-    context.mock.mockImplementation(() => { throw 'Channel creation error' });
+    context.mock.mockImplementation(() => {
+      throw 'Channel creation error';
+    });
 
-    // Call enqueueJob with test arguments
     const queueName = 'testQueue';
     const payload = { message: 'Try to simulate channel creation error' };
 
