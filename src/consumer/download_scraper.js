@@ -6,21 +6,23 @@ const url = 'https://saveig.app/en/instagram-video-downloader';
 
 async function downloadScraper({ link }) {
   const browser = await puppeteer.launch({
+    browser: 'firefox',
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    executablePath: '/usr/bin/google-chrome-stable'
+    executablePath: '/usr/bin/firefox'
   });
   const page = await browser.newPage();
   await page.goto(url);
   await page.type('input', link);
+  await page.waitForSelector('.btn-default');
   await page.waitForSelector('input');
-  await page.click('input');
 
-  await page.click('button');
+  await page.click('.btn-default');
   await page.waitForSelector('.abutton');
   const links = await page.$$eval('.abutton', (aTags) => {
-    return aTags.map((a) => a.href);
+    return aTags.filter((a) => a.title === 'Download Video').map((a) => a.href);
   });
+
   await browser.close();
 
   for await (var [index, href] of links.entries()) {
