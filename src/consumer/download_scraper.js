@@ -2,7 +2,7 @@ import puppeteer from 'puppeteer';
 import fs from 'fs/promises';
 import axios from 'axios';
 
-const url = 'https://saveig.app/en/instagram-video-downloader';
+const url = 'https://savevid.net/en';
 
 async function downloadScraper({ link }) {
   const browser = await puppeteer.launch({
@@ -41,6 +41,8 @@ function createFileName(link, index) {
     return `./videos/${link.split('/p/')[1].replace(/\/.*/, '')}${index}.mp4`;
   } else if (link.includes('/reel/')) {
     return `./videos/${link.split('/reel/')[1].replace(/\/.*/, '')}${index}.mp4`;
+  } else if (link.includes('/reels/')) {
+    return `./videos/${link.split('/reels/')[1].replace(/\/.*/, '')}${index}.mp4`;
   }
 }
 
