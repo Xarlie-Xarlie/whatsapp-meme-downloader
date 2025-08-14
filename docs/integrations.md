@@ -164,7 +164,7 @@ ffmpeg -ss {startTime} -i {input} -t {duration} -c copy {output}
 
 ### **Credenciais e Autenticação**
 - WhatsApp: Autenticação via QR code, sessão persistida localmente
-- RabbitMQ: **⚠️ Atenção:** O uso das credenciais padrão (`guest`/`guest`) é um risco de segurança, mesmo em ambientes locais. Recomenda-se fortemente alterar as credenciais padrão no ambiente de desenvolvimento para evitar exposições acidentais.
+- RabbitMQ: **⚠️ Atenção:** O sistema **não utiliza** as credenciais padrão (`guest`/`guest`). É obrigatório configurar credenciais seguras e exclusivas para o RabbitMQ em todos os ambientes. O uso das credenciais padrão é bloqueado pelo código e resultará em erro de conexão.
 - External APIs: Nenhuma autenticação específica requerida
 
 ### **Rate Limiting e Throttling**

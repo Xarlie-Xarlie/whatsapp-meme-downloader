@@ -129,7 +129,37 @@ const command = `ffmpeg -ss ${startTime} -i ${inputPath} -t ${endTime - startTim
 // -ss: Tempo inicial
 // -i: Arquivo de entrada  
 // -t: Duração do segmento
-// -c copy: Cópia sem recodificação (preserva qualidade). Atenção: pode não funcionar para todos os formatos de entrada ou quando os containers de origem e destino são incompatíveis.
+const { exec } = require('child_process');
+
+async function segmentVideo(inputPath, startTime, endTime, segmentOutputPath) {
+  return new Promise((resolve, reject) => {
+    // Primeiro tenta com -c copy (sem recodificação)
+    const copyCommand = `ffmpeg -ss ${startTime} -i "${inputPath}" -t ${endTime - startTime} -c copy "${segmentOutputPath}"`;
+    exec(copyCommand, (error, stdout, stderr) => {
+      if (!error) {
+        resolve();
+        return;
+      }
+      console.warn('Falha ao segmentar com -c copy, tentando recodificação padrão:', stderr);
+      // Fallback: tenta sem -c copy (reencodifica)
+      const reencodeCommand = `ffmpeg -ss ${startTime} -i "${inputPath}" -t ${endTime - startTime} -y "${segmentOutputPath}"`;
+      exec(reencodeCommand, (error2, stdout2, stderr2) => {
+        if (error2) {
+          console.error('Falha ao segmentar vídeo mesmo após recodificação:', stderr2);
+          reject(error2);
+          return;
+        }
+        resolve();
+      });
+    });
+  });
+}
+
+// Parâmetros:
+// -ss: Tempo inicial
+// -i: Arquivo de entrada  
+// -t: Duração do segmento
+// -c copy: Cópia sem recodificação (preserva qualidade). Atenção: fallback automático para recodificação se necessário.
 ```
 
 ### **Nomenclatura de Segmentos**
