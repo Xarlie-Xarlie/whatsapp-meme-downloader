@@ -129,7 +129,7 @@ const command = `ffmpeg -ss ${startTime} -i ${inputPath} -t ${endTime - startTim
 // -ss: Tempo inicial
 // -i: Arquivo de entrada  
 // -t: Duração do segmento
-// -c copy: Cópia sem recodificação (preserva qualidade)
+// -c copy: Cópia sem recodificação (preserva qualidade). Atenção: pode não funcionar para todos os formatos de entrada ou quando os containers de origem e destino são incompatíveis.
 ```
 
 ### **Nomenclatura de Segmentos**

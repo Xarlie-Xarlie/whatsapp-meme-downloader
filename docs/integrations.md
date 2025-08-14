@@ -24,7 +24,9 @@ O WhatsApp Meme Downloader interage com diversos serviços externos e APIs para 
 ```javascript
 webVersionCache: {
   type: 'remote',
-  remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html'
+  // Use a specific commit hash to avoid supply chain risks. Example commit hash below:
+  remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/6e2b1c2a7e2e3b1e2c3d4f5a6b7c8d9e0f1a2b3c/html/2.2412.54.html'
+  // For maximum security, consider downloading this file and referencing a local copy instead.
 }
 ```
 
@@ -162,7 +164,7 @@ ffmpeg -ss {startTime} -i {input} -t {duration} -c copy {output}
 
 ### **Credenciais e Autenticação**
 - WhatsApp: Autenticação via QR code, sessão persistida localmente
-- RabbitMQ: Credenciais padrão (guest/guest) - apenas ambiente local
+- RabbitMQ: **⚠️ Atenção:** O uso das credenciais padrão (`guest`/`guest`) é um risco de segurança, mesmo em ambientes locais. Recomenda-se fortemente alterar as credenciais padrão no ambiente de desenvolvimento para evitar exposições acidentais.
 - External APIs: Nenhuma autenticação específica requerida
 
 ### **Rate Limiting e Throttling**
